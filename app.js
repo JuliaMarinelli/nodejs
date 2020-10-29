@@ -1,8 +1,10 @@
 const net = require('net');
 const users = [];
 const messages = [];
+let admin;
 
 const regWisp = new RegExp("^/w [0-9]")
+const regKick = new RegExp("^/kick [0-9]")
 
 const userConnection = function(users, socket){
     users.forEach(user => {
@@ -14,6 +16,9 @@ const userConnection = function(users, socket){
 
 const server = net.createServer(function(socket){
     users.push(socket);
+    if(!admin){
+        admin = socket
+    }
     messages.push("");
     userConnection(users, socket)
     console.log('users : ', users.length)
@@ -39,6 +44,19 @@ const server = net.createServer(function(socket){
                             users[wisp[1]].write(i + " : " + regWisp.exec(messages[i])[1] + "\n\r")
                         } else {
                             user.write("Le destinataire n'est pas connecté\n\r")
+                        }
+                    } else if(regKick.test(messages[i])){
+                        if(user === admin){
+                            console.log("Kick !")
+                            let kick = messages[i].split(" ");
+                            if(kick[1] < users.length && users[kick[1]] !== null ){
+                                console.log("Client " + kick[i] + " a été kick par client " + i + "\n\r")
+                                users[kick[1]].destroy();
+                            }   else {
+                                user.write("L'utilisateur à kick n'est pas connecté\n\r")
+                            }
+                        } else {
+                            console.log("Permission de kick non accordée")
                         }
                     } else {
                         users.forEach(user => {
