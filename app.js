@@ -4,7 +4,8 @@ const messages = [];
 let admin;
 
 const regWisp = new RegExp("^/w [0-9]")
-const regKick = new RegExp("^/kick [0-9]")
+const regKick = new RegExp("/kick [0-9]")
+const regQuit = new RegExp("/quit")
 
 const userConnection = function(users, socket){
     users.forEach(user => {
@@ -58,7 +59,10 @@ const server = net.createServer(function(socket){
                         } else {
                             console.log("Permission de kick non accordée")
                         }
-                    } else {
+                    } else if(regQuit.test(messages[i])){
+                        socket.destroy();
+                    }
+                    else {
                         users.forEach(user => {
                             if(user !== socket && user !== null){
                                 user.write(i + " : " + messages[i] + "\n\r")
